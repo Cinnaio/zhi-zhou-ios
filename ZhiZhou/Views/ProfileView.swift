@@ -43,8 +43,10 @@ struct ProfileView: View {
                 LabeledContent("当前地址", value: ServerConfig.serverURL)
             }
 
-            Section("开发") {
+            Section {
                 Toggle("信任无效证书（开发用）", isOn: $allowInvalidCert)
+            } header: {
+                Text("开发")
             } footer: {
                 Text("连接 HTTPS 自签名/过期证书导致“TLS 错误”时打开；生产环境请关闭。")
             }

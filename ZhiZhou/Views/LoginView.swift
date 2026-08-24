@@ -184,7 +184,7 @@ struct LoginView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
-        .glassEffect(.thinMaterial, in: .rect(cornerRadius: 14))
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(.white.opacity(0.16), lineWidth: 1)
