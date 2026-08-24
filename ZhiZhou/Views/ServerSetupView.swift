@@ -6,6 +6,7 @@ struct ServerSetupView: View {
     @State private var urlText = ""
     @State private var testing = false
     @State private var message: String?
+    @AppStorage("zhizhou.allowInvalidCert") private var allowInvalidCert = true
 
     var body: some View {
         NavigationStack {
@@ -48,6 +49,12 @@ struct ServerSetupView: View {
                         }
                     }
                     .disabled(trimmed.isEmpty)
+                }
+
+                Section {
+                    Toggle("信任无效证书（开发用）", isOn: $allowInvalidCert)
+                } footer: {
+                    Text("HTTPS 自签名/过期证书导致“TLS 错误”时打开；生产环境请关闭并使用受信任的正式证书。")
                 }
             }
             .navigationTitle("欢迎使用知舟")

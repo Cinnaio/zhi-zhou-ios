@@ -18,6 +18,7 @@ project.yml                        XcodeGen 工程描述
 ZhiZhou/
   ZhiZhouApp.swift                 App 入口
   Support/Info.plist               （含 ATS：开发期允许 HTTP 明文）
+  Assets.xcassets/AppIcon.appiconset   App 图标（1024 单尺寸，可替换）
   Models/Models.swift              服务端模型（对齐 shared/types.ts）
   Networking/
     APIClient.swift                类型化 fetch 封装（Bearer token / 超时 / 分页）
@@ -71,12 +72,21 @@ ZhiZhou/
 2. 登录（注册模式随服务端 `register-status` 自动切换，邀请制需要邀请码）
 3. 发现页浏览/搜索 → 详情页 → 阅读器
 
+## 自托管 HTTPS 证书（TLS 错误排查）
+
+知舟服务器若使用**自签名证书**（mkcert/openssl 自签）或证书过期/域名不匹配，iOS 会直接拒绝，登录时报
+`网络错误：TLS错误导致安全连接失败`。解决：
+
+- **开发期**：在「服务器设置」（或「我的 → 服务器」）打开 **“信任无效证书（开发用）”** 开关（默认已开启），
+  App 会跳过证书校验。注意这会使连接可被中间人攻击，仅限自用/开发。
+- **生产**：请关闭该开关，为域名配置受信任的正式证书（Let's Encrypt / 云厂商证书），并移除
+  Info.plist 中的 `NSAllowsArbitraryLoads`。
+
 ## 已知限制与后续路线
 
-- [ ] 离线阅读（expo-sqlite → SwiftData/Core Data 章节缓存 + 自动下载下一章）
+- [ ] 离线阅读（SwiftData/Core Data 章节缓存 + 自动下载下一章）
 - [ ] 评论 / 段评 / 评分页（API 已就绪，UI 未做）
 - [ ] 推送通知（新章节提醒，需自建推送服务，如 APNs + 你的服务器）
-- [ ] App 图标与启动图（当前未配置 Assets.xcassets）
 - [ ] CI 签名（$99 账号 + GitHub Secrets + fastlane match → 出签名 ipa / TestFlight）
 
 ## App Store 上架注意事项（重要）

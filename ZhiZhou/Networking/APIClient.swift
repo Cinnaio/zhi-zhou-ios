@@ -24,18 +24,20 @@ struct EmptyResponse: Decodable {}
 /// 类型化 fetch 封装 —— 语义对齐 web/src/lib/api.ts。
 /// - 鉴权：Authorization: Bearer <token>（token 存 Keychain）
 /// - 超时：请求 30s
-final class APIClient {
+final class APIClient: NSObject, URLSessionDelegate {
     static let shared = APIClient()
 
     private let session: URLSession
     private let decoder = JSONDecoder()
     private static let tokenKey = "zhizhou.token"
+    private static let allowInvalidCertKey = "zhizhou.allowInvalidCert"
 
-    private init() {
+    private override init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
-        session = URLSession(configuration: config)
+        session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        super.init()
     }
 
     // MARK: - 鉴权
@@ -54,6 +56,29 @@ final class APIClient {
     var isAuthenticated: Bool {
         guard let token, !token.isEmpty else { return false }
         return true
+    }
+
+    // MARK: - TLS（自托管开发场景）
+
+    /// 是否信任无效证书（自签名/过期/域名不匹配）。默认开启便于连接自托管服务器；生产环境请关闭。
+    var allowsInvalidCertificates: Bool {
+        get { UserDefaults.standard.object(forKey: Self.allowInvalidCertKey) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: Self.allowInvalidCertKey) }
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        guard allowsInvalidCertificates,
+              challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let trust = challenge.protectionSpace.serverTrust
+        else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        completionHandler(.useCredential, URLCredential(trust: trust))
     }
 
     // MARK: - 资源 URL
@@ -107,7 +132,7 @@ final class APIClient {
         do {
             (data, response) = try await session.data(for: req)
         } catch let error as URLError {
-            throw APIError.network(error.localizedDescription)
+            throw APIError.network(friendlyDescription(for: error))
         } catch {
             throw APIError.network(error.localizedDescription)
         }
@@ -147,5 +172,19 @@ final class APIClient {
 
     func jsonBody(_ value: some Encodable) throws -> Data {
         try JSONEncoder().encode(value)
+    }
+
+    /// TLS/证书类错误的友好提示，引导用户开启开发用证书放行开关
+    private func friendlyDescription(for error: URLError) -> String {
+        switch error.code {
+        case .serverCertificateUntrusted,
+             .serverCertificateHasBadDate,
+             .serverCertificateHasUnknownRoot,
+             .serverCertificateNotYetValid,
+             .secureConnectionFailed:
+            return "TLS/证书错误：服务器证书不受信任。可在「服务器设置」中开启“信任无效证书（开发用）”后重试。"
+        default:
+            return error.localizedDescription
+        }
     }
 }

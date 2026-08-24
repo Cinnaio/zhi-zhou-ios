@@ -7,6 +7,7 @@ struct ProfileView: View {
 
     @State private var showLogoutConfirm = false
     @State private var showReaderSettings = false
+    @AppStorage("zhizhou.allowInvalidCert") private var allowInvalidCert = true
 
     var body: some View {
         Form {
@@ -45,6 +46,7 @@ struct ProfileView: View {
                 } label: {
                     Label("修改服务器地址", systemImage: "server.rack")
                 }
+                Toggle("信任无效证书（开发用）", isOn: $allowInvalidCert)
             }
 
             Section {
