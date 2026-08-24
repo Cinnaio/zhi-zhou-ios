@@ -107,8 +107,22 @@ final class APIClient: NSObject, URLSessionDelegate {
             return url
         }
         guard let base = ServerConfig.shared.baseURL else { throw APIError.notConfigured }
-        let trimmed = path.hasPrefix("/") ? String(path.dropFirst()) : path
-        return base.appendingPathComponent(trimmed)
+        var trimmed = path.hasPrefix("/") ? String(path.dropFirst()) : path
+        if trimmed.hasSuffix("/") { trimmed = String(trimmed.dropLast()) }
+
+        // 拆分 path 与 query：appendingPathComponent 会把 ?、&、= 百分号编码导致 404，
+        // 因此 query 部分必须单独用 URLComponents 拼接。
+        guard let queryIndex = trimmed.firstIndex(of: "?") else {
+            return base.appendingPathComponent(trimmed)
+        }
+        let pathPart = String(trimmed[..<queryIndex])
+        let queryPart = String(trimmed[trimmed.index(after: queryIndex)...])
+        let pathURL = base.appendingPathComponent(pathPart)
+        guard var comps = URLComponents(url: pathURL, resolvingAgainstBaseURL: false) else {
+            return pathURL
+        }
+        comps.query = queryPart
+        return comps.url ?? pathURL
     }
 
     func request<T: Decodable>(_ method: String, _ path: String, body: Data? = nil, auth: Bool = false) async throws -> T {
