@@ -38,16 +38,13 @@ struct NovelCardView: View {
     }
 
     private var cover: some View {
-        AsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            default:
-                ZStack {
-                    AppTheme.primaryLight
-                    Image(systemName: "book.closed")
-                        .foregroundStyle(AppTheme.primary)
-                }
+        CachedAsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { image in
+            image.resizable().scaledToFill()
+        } placeholder: {
+            ZStack {
+                AppTheme.primaryLight
+                Image(systemName: "book.closed")
+                    .foregroundStyle(AppTheme.primary)
             }
         }
         .frame(width: 76, height: 108)

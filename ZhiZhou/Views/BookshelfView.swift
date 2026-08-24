@@ -55,12 +55,10 @@ struct BookshelfView: View {
                     ForEach(response.favorites) { favorite in
                         NavigationLink(value: favorite.asNovel) {
                             HStack(spacing: 10) {
-                                AsyncImage(url: APIClient.shared.coverURL(novelId: favorite.novelId, updatedAt: favorite.novelUpdatedAt)) { phase in
-                                    if case .success(let image) = phase {
-                                        image.resizable().scaledToFill()
-                                    } else {
-                                        AppTheme.primaryLight
-                                    }
+                                CachedAsyncImage(url: APIClient.shared.coverURL(novelId: favorite.novelId, updatedAt: favorite.novelUpdatedAt)) { image in
+                                    image.resizable().scaledToFill()
+                                } placeholder: {
+                                    AppTheme.primaryLight
                                 }
                                 .frame(width: 40, height: 56)
                                 .clipShape(RoundedRectangle(cornerRadius: 6))

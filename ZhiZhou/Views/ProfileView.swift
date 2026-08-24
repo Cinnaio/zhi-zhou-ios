@@ -75,12 +75,10 @@ struct ProfileView: View {
     @ViewBuilder
     private func avatar(for user: User) -> some View {
         if let url = APIClient.shared.avatarURL(userId: user.id) {
-            AsyncImage(url: url) { phase in
-                if case .success(let image) = phase {
-                    image.resizable().scaledToFill()
-                } else {
-                    placeholder
-                }
+            CachedAsyncImage(url: url) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                placeholder
             }
             .frame(width: 56, height: 56)
             .clipShape(Circle())

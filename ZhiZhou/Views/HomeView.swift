@@ -164,8 +164,19 @@ struct HomeView: View {
             page = r.page
             totalPages = r.totalPages
             errorMessage = nil
+            prefetchCovers(r.novels)
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// 后台预取当前页封面，避免滚动到卡片时才排队下载
+    private func prefetchCovers(_ items: [Novel]) {
+        for novel in items {
+            guard let url = APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt) else { continue }
+            Task.detached {
+                _ = try? await ImageCache.session.data(from: url)
+            }
         }
     }
 

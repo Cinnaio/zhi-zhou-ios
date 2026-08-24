@@ -66,16 +66,13 @@ struct NovelDetailView: View {
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 14) {
-                AsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    default:
-                        ZStack {
-                            AppTheme.primaryLight
-                            Image(systemName: "book.closed")
-                                .foregroundStyle(AppTheme.primary)
-                        }
+                CachedAsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    ZStack {
+                        AppTheme.primaryLight
+                        Image(systemName: "book.closed")
+                            .foregroundStyle(AppTheme.primary)
                     }
                 }
                 .frame(width: 88, height: 126)
