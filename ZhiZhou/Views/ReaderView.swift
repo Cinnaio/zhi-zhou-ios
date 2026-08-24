@@ -161,18 +161,21 @@ struct ReaderView: View {
         isLoading = true
         defer { isLoading = false }
         do {
+            // 服务端正文接口为 /api/chapters/{chapterId}：先用目录的 order 反查章节 id，再取正文。
+            let list: ChaptersResponse = try await APIClient.shared.get(
+                "/api/chapters?novelId=\(novel.id)"
+            )
+            chapterCount = list.chapters.count
+            guard let meta = list.chapters.first(where: { $0.order == chapterOrder }) else {
+                errorMessage = "未找到第 \(chapterOrder) 章"
+                return
+            }
+
             let r: ChapterResponse = try await APIClient.shared.get(
-                "/api/chapters?novelId=\(novel.id)&order=\(chapterOrder)"
+                "/api/chapters/\(meta.id)"
             )
             chapter = r.chapter
             errorMessage = nil
-
-            // 拉取真实章节总数（从「最近阅读」进入时 novel.chapterCount 可能为 0）
-            if let list: ChaptersResponse = try? await APIClient.shared.get(
-                "/api/chapters?novelId=\(novel.id)"
-            ) {
-                chapterCount = list.chapters.count
-            }
 
             // 恢复阅读进度
             if !didRestore, APIClient.shared.isAuthenticated {
