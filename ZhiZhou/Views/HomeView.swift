@@ -16,6 +16,9 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 14) {
+                Text("书海里，遇见好故事")
+                    .font(serifFont(22, .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
                 searchField
                 categoryChips
 
@@ -70,22 +73,23 @@ struct HomeView: View {
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppTheme.textSecondary)
             TextField("搜索书名 / 作者", text: $search)
                 .textFieldStyle(.plain)
+                .foregroundStyle(AppTheme.textPrimary)
+                .tint(AppTheme.primary)
             if !search.isEmpty {
                 Button {
                     search = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(AppTheme.textMuted)
                 }
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: .rect(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
     }
 
     private var categoryChips: some View {

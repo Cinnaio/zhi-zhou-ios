@@ -51,6 +51,6 @@ struct ChapterListView: View {
                 }
             }
         }
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(AppTheme.surfaceWarm)
     }
 }

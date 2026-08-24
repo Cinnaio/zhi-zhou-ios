@@ -75,6 +75,6 @@ struct ReaderSettingsView: View {
                 }
             }
         }
-        .presentationBackground(.ultraThinMaterial)
+        .presentationBackground(AppTheme.surfaceWarm)
     }
 }

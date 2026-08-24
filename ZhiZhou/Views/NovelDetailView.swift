@@ -83,8 +83,7 @@ struct NovelDetailView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(novel.title)
-                        .font(.title3)
-                        .bold()
+                        .font(serifFont(20, .semibold))
                         .foregroundStyle(AppTheme.textPrimary)
                     Text(novel.author)
                         .font(.subheadline)
@@ -92,11 +91,7 @@ struct NovelDetailView: View {
                     HStack(spacing: 6) {
                         ForEach(novel.categories, id: \.self) { category in
                             Text(category)
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(AppTheme.primaryLight, in: Capsule())
-                                .foregroundStyle(AppTheme.primaryDeep)
+                                .modifier(ThemeTagModifier())
                         }
                     }
                 }
@@ -115,9 +110,12 @@ struct NovelDetailView: View {
                 Label(inBookshelf ? "已在书架" : "加入书架",
                       systemImage: inBookshelf ? "checkmark.circle.fill" : "plus.circle")
                     .font(.footnote)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
             }
             .buttonStyle(.borderedProminent)
-            .tint(inBookshelf ? Color.gray : AppTheme.primary)
+            .tint(inBookshelf ? AppTheme.textMuted : AppTheme.primary)
         }
         .padding(16)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))

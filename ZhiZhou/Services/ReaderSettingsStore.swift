@@ -42,15 +42,16 @@ final class ReaderSettingsStore: ObservableObject {
     var contentMode: String { values["contentMode"] ?? "safe" }
 
     /// 阅读器纸面背景（对应 Web 端 readerTheme：default=纸面 / eye=护眼 / paper=羊皮纸）
+    /// 暖调奶油治愈风：纸面/护眼/羊皮纸均为暖色调变体，保证文字可读性。
     var backgroundColor: Color {
         switch themeName {
-        case "eye": return Color(hex: "C7EDCC")
-        case "paper": return Color(hex: "F5E9D3")
-        default: return Color(hex: "F6F4F1")
+        case "eye": return Color(hex: "E7EBD9")         // 护眼：暖调鼠尾草
+        case "paper": return Color(hex: "F2E3C6")       // 羊皮纸：暖黄
+        default: return Color(hex: "FBF6EE")            // 纸面：奶油纸面
         }
     }
 
-    var textColor: Color { Color(hex: "211E1A") }
+    var textColor: Color { Color(hex: "3A2E24") }
 
     var bodyFont: Font {
         useSerif

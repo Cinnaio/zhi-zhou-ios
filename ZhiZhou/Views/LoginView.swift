@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 登录 / 注册（注册模式随服务端 register-status 动态切换）。
-/// iOS 26 Liquid Glass 风格：深色极光背景 + 玻璃卡片。
+/// 暖调奶油 · 治愈手账风：暖纸面背景 + 玻璃卡片。
 struct LoginView: View {
     @EnvironmentObject private var appState: AppState
     @State private var mode: Mode = .login
@@ -17,12 +17,12 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            auroraBackdrop
+            warmBackdrop
 
             ScrollView {
-                VStack(spacing: 26) {
+                VStack(spacing: 24) {
                     header
-                        .padding(.top, 96)
+                        .padding(.top, 72)
                     glassCard
                     serverNote
                 }
@@ -36,35 +36,35 @@ struct LoginView: View {
         .task { await fetchRegisterStatus() }
     }
 
-    // MARK: - 背景（深色极光，为玻璃折射提供彩色底）
+    // MARK: - 背景（暖纸面 + 柔和光斑）
 
-    private var auroraBackdrop: some View {
+    private var warmBackdrop: some View {
         ZStack {
             AppTheme.auroraBackground.ignoresSafeArea()
 
             Circle()
-                .fill(Color(hex: "4D9BFF").opacity(0.55))
-                .frame(width: 340, height: 340)
+                .fill(AppTheme.peach.opacity(0.5))
+                .frame(width: 320, height: 320)
                 .blur(radius: 90)
-                .offset(x: -150, y: -320)
+                .offset(x: -150, y: -300)
 
             Circle()
-                .fill(Color(hex: "B44DFF").opacity(0.5))
+                .fill(AppTheme.rose.opacity(0.4))
                 .frame(width: 300, height: 300)
                 .blur(radius: 100)
-                .offset(x: 170, y: -140)
+                .offset(x: 160, y: -120)
 
             Circle()
-                .fill(Color(hex: "FF6FA5").opacity(0.45))
-                .frame(width: 320, height: 320)
+                .fill(AppTheme.butter.opacity(0.5))
+                .frame(width: 340, height: 340)
                 .blur(radius: 100)
-                .offset(x: -60, y: 330)
+                .offset(x: -60, y: 320)
 
             Circle()
-                .fill(Color(hex: "35E0C0").opacity(0.22))
+                .fill(AppTheme.sage.opacity(0.35))
                 .frame(width: 260, height: 260)
                 .blur(radius: 110)
-                .offset(x: 210, y: 360)
+                .offset(x: 200, y: 340)
         }
     }
 
@@ -74,27 +74,21 @@ struct LoginView: View {
         VStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(hex: "FFE0B8"), Color(hex: "F2B28C")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(AppTheme.brandGradient)
                 Image(systemName: "book.closed.fill")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(Color(hex: "6E4A34"))
+                    .foregroundStyle(.white.opacity(0.95))
             }
             .frame(width: 92, height: 92)
-            .shadow(color: .black.opacity(0.3), radius: 16, y: 8)
+            .shadow(color: AppTheme.terracotta.opacity(0.35), radius: 16, y: 8)
 
             Text("知舟")
-                .font(.system(size: 38, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .font(serifFont(38, .bold))
+                .foregroundStyle(AppTheme.textPrimary)
 
             Text("登录后同步书架与阅读进度")
                 .font(.footnote)
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(AppTheme.textSecondary)
         }
     }
 
@@ -119,7 +113,7 @@ struct LoginView: View {
             if mode == .register && registerMode == .closed {
                 Text("当前站点注册已关闭")
                     .font(.footnote)
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(AppTheme.textSecondary)
             }
 
             submitButton
@@ -127,7 +121,7 @@ struct LoginView: View {
             if let errorMessage {
                 Text(errorMessage)
                     .font(.footnote)
-                    .foregroundStyle(Color(hex: "FFC2D4"))
+                    .foregroundStyle(AppTheme.danger)
                     .multilineTextAlignment(.center)
             }
         }
@@ -135,9 +129,9 @@ struct LoginView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: 28))
         .overlay(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .strokeBorder(.white.opacity(0.22), lineWidth: 1)
+                .strokeBorder(.white.opacity(0.6), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.28), radius: 24, y: 12)
+        .shadow(color: AppTheme.terracotta.opacity(0.18), radius: 24, y: 12)
     }
 
     private var modePicker: some View {
@@ -146,19 +140,19 @@ struct LoginView: View {
             segment(title: "注册", isSelected: mode == .register) { mode = .register }
         }
         .padding(4)
-        .background(.white.opacity(0.12), in: Capsule())
-        .overlay(Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 1))
+        .background(.white.opacity(0.6), in: Capsule())
+        .overlay(Capsule().strokeBorder(.white.opacity(0.7), lineWidth: 1))
     }
 
     private func segment(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                .foregroundStyle(isSelected ? Color(hex: "4A3A55") : Color.white.opacity(0.8))
+                .foregroundStyle(isSelected ? Color.white : AppTheme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
                 .background(
-                    isSelected ? Color.white : Color.clear,
+                    isSelected ? AppTheme.primary : Color.clear,
                     in: Capsule()
                 )
         }
@@ -169,7 +163,7 @@ struct LoginView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.75))
+                .foregroundStyle(AppTheme.textSecondary)
                 .frame(width: 20)
 
             Group {
@@ -179,15 +173,15 @@ struct LoginView: View {
                     TextField(placeholder, text: text)
                 }
             }
-            .foregroundStyle(.white)
-            .tint(.white)
+            .foregroundStyle(AppTheme.textPrimary)
+            .tint(AppTheme.primary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(.white.opacity(0.16), lineWidth: 1)
+                .strokeBorder(.white.opacity(0.6), lineWidth: 1)
         )
     }
 
@@ -207,18 +201,21 @@ struct LoginView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(AppTheme.buttonGradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(
+                AppTheme.buttonGradient,
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
         }
         .buttonStyle(.plain)
         .disabled(busy || username.isEmpty || password.count < 8)
-        .opacity(busy || username.isEmpty || password.count < 8 ? 0.55 : 1)
-        .shadow(color: Color(hex: "6E4A34").opacity(0.45), radius: 14, y: 7)
+        .opacity(busy || username.isEmpty || password.count < 8 ? 0.6 : 1)
+        .shadow(color: AppTheme.primaryDeep.opacity(0.35), radius: 14, y: 7)
     }
 
     private var serverNote: some View {
         Label("连接知舟 · novel.mscraft.uk", systemImage: "server.rack")
             .font(.caption)
-            .foregroundStyle(.white.opacity(0.45))
+            .foregroundStyle(AppTheme.textMuted)
     }
 
     // MARK: - 动作

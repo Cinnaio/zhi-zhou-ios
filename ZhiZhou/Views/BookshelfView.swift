@@ -33,17 +33,18 @@ struct BookshelfView: View {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 3) {
                                         Text(item.novelTitle)
-                                            .font(.subheadline)
+                                            .font(serifFont(15, .semibold))
+                                            .foregroundStyle(AppTheme.textPrimary)
                                             .lineLimit(1)
                                         Text(item.chapterTitle)
                                             .font(.footnote)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(AppTheme.textSecondary)
                                             .lineLimit(1)
                                     }
                                     Spacer()
                                     Text("\(Int(item.scrollPercent * 100))%")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(AppTheme.textMuted)
                                 }
                             }
                         }
@@ -66,16 +67,18 @@ struct BookshelfView: View {
 
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(favorite.title)
+                                        .font(serifFont(15, .semibold))
+                                        .foregroundStyle(AppTheme.textPrimary)
                                         .lineLimit(1)
                                     Text(favorite.author)
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(AppTheme.textSecondary)
                                 }
                                 Spacer()
                                 if let percent = favorite.scrollPercent, percent > 0 {
                                     Text("\(Int(percent * 100))%")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(AppTheme.textMuted)
                                 }
                             }
                         }

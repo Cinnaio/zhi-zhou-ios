@@ -16,11 +16,11 @@ struct ProfileView: View {
                         avatar(for: user)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(user.displayName)
-                                .font(.headline)
+                                .font(serifFont(18, .semibold))
                                 .foregroundStyle(AppTheme.textPrimary)
                             Text("@\(user.username)")
                                 .font(.footnote)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppTheme.textSecondary)
                             Text(user.displayBio)
                                 .font(.caption)
                                 .foregroundStyle(AppTheme.textMuted)
