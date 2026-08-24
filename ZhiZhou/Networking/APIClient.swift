@@ -27,18 +27,17 @@ struct EmptyResponse: Decodable {}
 final class APIClient: NSObject, URLSessionDelegate {
     static let shared = APIClient()
 
-    private let session: URLSession
     private let decoder = JSONDecoder()
     private static let tokenKey = "zhizhou.token"
     private static let allowInvalidCertKey = "zhizhou.allowInvalidCert"
 
-    private override init() {
+    /// lazy：URLSession 的 delegate 需要 self 已完全初始化，故延迟到首次使用时创建
+    private lazy var session: URLSession = {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
-        session = URLSession(configuration: config, delegate: self, delegateQueue: nil)
-        super.init()
-    }
+        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
+    }()
 
     // MARK: - 鉴权
 
