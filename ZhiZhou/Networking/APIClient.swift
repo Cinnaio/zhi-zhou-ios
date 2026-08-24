@@ -147,7 +147,7 @@ final class APIClient: NSObject, URLSessionTaskDelegate {
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.data(for: req)
+            (data, response) = try await perform(req)
         } catch let error as URLError {
             throw APIError.network(friendlyDescription(for: error))
         } catch {
@@ -191,6 +191,24 @@ final class APIClient: NSObject, URLSessionTaskDelegate {
         try JSONEncoder().encode(value)
     }
 
+    /// 走传统 dataTask(completionHandler) 路径，而非 async `data(for:)`：
+    /// async 包装在部分 iOS 版本上存在 task 级 serverTrust challenge 不回调的问题，
+    /// 传统路径的 URLSessionTaskDelegate 证书放行是可靠触发的。
+    private func perform(_ req: URLRequest) async throws -> (Data, URLResponse) {
+        try await withCheckedThrowingContinuation { continuation in
+            let task = session.dataTask(with: req) { data, response, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let data, let response {
+                    continuation.resume(returning: (data, response))
+                } else {
+                    continuation.resume(throwing: APIError.invalidResponse)
+                }
+            }
+            task.resume()
+        }
+    }
+
     /// TLS/证书类错误的友好提示，引导用户开启开发用证书放行开关
     private func friendlyDescription(for error: URLError) -> String {
         switch error.code {
@@ -199,9 +217,9 @@ final class APIClient: NSObject, URLSessionTaskDelegate {
              .serverCertificateHasUnknownRoot,
              .serverCertificateNotYetValid,
              .secureConnectionFailed:
-            return "TLS/证书错误：服务器证书不受信任。可在「服务器设置」中开启“信任无效证书（开发用）”后重试。"
+            return "TLS/证书错误（code \(error.code.rawValue)）：服务器证书不受信任。可在「服务器设置」中开启“信任无效证书（开发用）”后重试。"
         default:
-            return error.localizedDescription
+            return "网络错误（code \(error.code.rawValue)）：\(error.localizedDescription)"
         }
     }
 }
