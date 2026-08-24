@@ -119,7 +119,10 @@ struct ReaderView: View {
                 Spacer()
                 Text("\(chapterOrder)/\(totalOrderCount)")
                     .font(.caption)
+                    .monospacedDigit()
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Spacer()
                 Button { go(to: chapterOrder + 1) } label: { Image(systemName: "chevron.right") }
                     .disabled(chapterOrder >= totalOrderCount)
