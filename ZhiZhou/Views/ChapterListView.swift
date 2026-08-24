@@ -75,12 +75,16 @@ struct ChapterListView: View {
         .presentationBackground(AppTheme.surfaceWarm)
     }
 
-    /// 打开目录时滚动到当前章节
+    /// 打开目录时滚动到当前章节。列表是懒加载的，目标行可能尚未布局，
+    /// 故用递增延时重试几次，确保最终定位成功。
     private func scrollToCurrent(_ proxy: ScrollViewProxy) {
-        guard let current = chapters.first(where: { $0.order == currentOrder }) else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                proxy.scrollTo(current.id, anchor: .center)
+        guard chapters.contains(where: { $0.order == currentOrder }) else { return }
+        for attempt in 0..<4 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.06 * Double(attempt)) {
+                guard let current = chapters.first(where: { $0.order == currentOrder }) else { return }
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    proxy.scrollTo(current.id, anchor: .center)
+                }
             }
         }
     }

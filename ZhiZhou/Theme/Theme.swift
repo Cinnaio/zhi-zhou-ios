@@ -97,16 +97,4 @@ extension View {
     func frostedRowBackground() -> some View {
         self.listRowBackground(Color.white.opacity(0.55))
     }
-
-    /// 柔和标签贴纸底（分类 / 属性章）
-    func stickerStyle(_ color: Color, textColor: Color) -> some View {
-        self
-            .font(.caption)
-            .foregroundStyle(textColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.85), in: Capsule())
-            .overlay(Capsule().strokeBorder(.white.opacity(0.5), lineWidth: 0.5))
-            .shadow(color: color.opacity(0.25), radius: 3, y: 1)
-    }
 }
