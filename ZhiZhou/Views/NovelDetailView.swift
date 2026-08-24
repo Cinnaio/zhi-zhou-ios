@@ -64,60 +64,64 @@ struct NovelDetailView: View {
     // MARK: - 头部玻璃卡片
 
     private var headerCard: some View {
-        HStack(alignment: .top, spacing: 14) {
-            AsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { phase in
-                switch phase {
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                default:
-                    ZStack {
-                        AppTheme.primaryLight
-                        Image(systemName: "book.closed")
-                            .foregroundStyle(AppTheme.primary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 14) {
+                AsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    default:
+                        ZStack {
+                            AppTheme.primaryLight
+                            Image(systemName: "book.closed")
+                                .foregroundStyle(AppTheme.primary)
+                        }
                     }
                 }
-            }
-            .frame(width: 88, height: 126)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                .frame(width: 88, height: 126)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(novel.title)
-                    .font(.title3)
-                    .bold()
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(novel.author)
-                    .font(.subheadline)
-                    .foregroundStyle(AppTheme.textSecondary)
-                HStack(spacing: 6) {
-                    ForEach(novel.categories, id: \.self) { category in
-                        Text(category)
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(AppTheme.primaryLight, in: Capsule())
-                            .foregroundStyle(AppTheme.primaryDeep)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(novel.title)
+                        .font(.title3)
+                        .bold()
+                        .foregroundStyle(AppTheme.textPrimary)
+                    Text(novel.author)
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.textSecondary)
+                    HStack(spacing: 6) {
+                        ForEach(novel.categories, id: \.self) { category in
+                            Text(category)
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(AppTheme.primaryLight, in: Capsule())
+                                .foregroundStyle(AppTheme.primaryDeep)
+                        }
                     }
                 }
-                Text(novel.description)
-                    .font(.footnote)
-                    .foregroundStyle(AppTheme.textMuted)
-                    .lineLimit(5)
-                Button {
-                    toggleBookshelf()
-                } label: {
-                    Label(inBookshelf ? "已在书架" : "加入书架",
-                          systemImage: inBookshelf ? "checkmark.circle.fill" : "plus.circle")
-                        .font(.footnote)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(inBookshelf ? Color.gray : AppTheme.primary)
-                .padding(.top, 4)
+                Spacer(minLength: 0)
             }
+
+            // 简介：全宽展示在封面/标题行下方
+            Text(novel.description)
+                .font(.footnote)
+                .foregroundStyle(AppTheme.textMuted)
+                .lineLimit(4)
+
+            Button {
+                toggleBookshelf()
+            } label: {
+                Label(inBookshelf ? "已在书架" : "加入书架",
+                      systemImage: inBookshelf ? "checkmark.circle.fill" : "plus.circle")
+                    .font(.footnote)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(inBookshelf ? Color.gray : AppTheme.primary)
         }
-        .padding(14)
+        .padding(16)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))
-        .shadow(color: .black.opacity(0.08), radius: 12, y: 5)
+        .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
     }
 
     // MARK: - 动作
