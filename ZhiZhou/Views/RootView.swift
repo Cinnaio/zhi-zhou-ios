@@ -14,6 +14,8 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: appState.isBooting)
+        // 设计为暖奶油浅色系，锁定浅色模式，避免深色模式下系统控件与暖底混搭
+        .preferredColorScheme(.light)
     }
 }
 

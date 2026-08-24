@@ -131,7 +131,6 @@ struct LoginView: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .strokeBorder(.white.opacity(0.6), lineWidth: 1)
         )
-        .shadow(color: AppTheme.terracotta.opacity(0.18), radius: 24, y: 12)
     }
 
     private var modePicker: some View {
@@ -207,9 +206,16 @@ struct LoginView: View {
             )
         }
         .buttonStyle(.plain)
-        .disabled(busy || username.isEmpty || password.count < 8)
-        .opacity(busy || username.isEmpty || password.count < 8 ? 0.6 : 1)
+        .disabled(!canSubmit)
+        .opacity(canSubmit ? 1 : 0.6)
         .shadow(color: AppTheme.primaryDeep.opacity(0.35), radius: 14, y: 7)
+    }
+
+    /// 登录只需用户名+密码非空；注册才要求密码 ≥ 8 位（避免短密码账号无法登录）
+    private var canSubmit: Bool {
+        guard !busy, !username.trimmingCharacters(in: .whitespaces).isEmpty else { return false }
+        if mode == .register { return password.count >= 8 }
+        return !password.isEmpty
     }
 
     private var serverNote: some View {
@@ -227,6 +233,10 @@ struct LoginView: View {
     }
 
     private func submit() async {
+        if mode == .register, password.count < 8 {
+            errorMessage = "密码至少 8 位"
+            return
+        }
         busy = true
         defer { busy = false }
         errorMessage = nil

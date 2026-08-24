@@ -24,6 +24,9 @@ struct BookshelfView: View {
                         systemImage: "bookmark",
                         description: Text("去发现页找一本喜欢的书吧")
                     )
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .frame(maxWidth: .infinity, minHeight: 320)
                 }
 
                 if !response.recent.isEmpty {

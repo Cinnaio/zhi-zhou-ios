@@ -10,6 +10,9 @@ struct NovelDetailView: View {
     @State private var inBookshelf = false
     @State private var errorMessage: String?
     @State private var progress: ReadingProgress?
+    @State private var displayNovel: Novel?
+    @State private var bookshelfBusy = false
+    @State private var showBookshelfError = false
 
     var body: some View {
         List {
@@ -59,14 +62,22 @@ struct NovelDetailView: View {
             ReaderView(novel: novel, chapterOrder: chapter.order)
         }
         .task { await load() }
+        .alert("操作未完成", isPresented: $showBookshelfError) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("加入书架失败，请检查网络后重试。")
+        }
     }
 
     // MARK: - 头部玻璃卡片
 
+    /// 展示用小说：优先用服务端补全的完整数据，否则用传入的（最近阅读可能信息不全）
+    private var currentNovel: Novel { displayNovel ?? novel }
+
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 14) {
-                CachedAsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { image in
+                CachedAsyncImage(url: APIClient.shared.coverURL(novelId: currentNovel.id, updatedAt: currentNovel.updatedAt)) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
                     ZStack {
@@ -79,27 +90,36 @@ struct NovelDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(novel.title)
+                    Text(currentNovel.title)
                         .font(serifFont(20, .semibold))
                         .foregroundStyle(AppTheme.textPrimary)
-                    Text(novel.author)
+                    Text(currentNovel.author)
                         .font(.subheadline)
                         .foregroundStyle(AppTheme.textSecondary)
-                    HStack(spacing: 6) {
-                        ForEach(novel.categories, id: \.self) { category in
-                            Text(category)
-                                .modifier(ThemeTagModifier())
+                    if !currentNovel.categories.isEmpty {
+                        HStack(spacing: 6) {
+                            ForEach(currentNovel.categories.prefix(3), id: \.self) { category in
+                                Text(category)
+                                    .modifier(ThemeTagModifier())
+                            }
+                            if currentNovel.categories.count > 3 {
+                                Text("+\(currentNovel.categories.count - 3)")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.textMuted)
+                            }
                         }
                     }
                 }
                 Spacer(minLength: 0)
             }
 
-            // 简介：全宽展示在封面/标题行下方
-            Text(novel.description)
-                .font(.footnote)
-                .foregroundStyle(AppTheme.textMuted)
-                .lineLimit(4)
+            // 简介：全宽展示在封面/标题行下方（无简介时隐藏，避免空白）
+            if !currentNovel.description.isEmpty {
+                Text(currentNovel.description)
+                    .font(.footnote)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(4)
+            }
 
             Button {
                 toggleBookshelf()
@@ -113,6 +133,7 @@ struct NovelDetailView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(inBookshelf ? AppTheme.textMuted : AppTheme.primary)
+            .disabled(bookshelfBusy)
         }
         .padding(16)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))
@@ -121,7 +142,10 @@ struct NovelDetailView: View {
     // MARK: - 动作
 
     private func toggleBookshelf() {
+        guard !bookshelfBusy else { return }
+        bookshelfBusy = true
         Task {
+            defer { bookshelfBusy = false }
             do {
                 if inBookshelf {
                     let _: OkEnvelope = try await APIClient.shared.delete(
@@ -136,7 +160,7 @@ struct NovelDetailView: View {
                     inBookshelf = true
                 }
             } catch {
-                // 静默失败：下次进入会重新同步状态
+                showBookshelfError = true
             }
         }
     }
@@ -145,6 +169,11 @@ struct NovelDetailView: View {
         isLoading = true
         defer { isLoading = false }
         do {
+            // 用 id 补全小说完整信息（从"最近阅读"进入时传入对象可能缺作者/分类/封面）
+            if let d: NovelDetailResponse = try? await APIClient.shared.get("/api/novels/\(novel.id)") {
+                displayNovel = d.novel
+            }
+
             let r: ChaptersResponse = try await APIClient.shared.get(
                 "/api/chapters?novelId=\(novel.id)"
             )
@@ -165,4 +194,9 @@ struct NovelDetailView: View {
             errorMessage = error.localizedDescription
         }
     }
+}
+
+/// 单本小说详情响应（用于补全"最近阅读"进入时的完整信息）
+private struct NovelDetailResponse: Decodable {
+    let novel: Novel
 }

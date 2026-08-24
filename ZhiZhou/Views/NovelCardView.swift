@@ -18,7 +18,7 @@ struct NovelCardView: View {
                 if !novel.description.isEmpty {
                     Text(novel.description)
                         .font(.footnote)
-                        .foregroundStyle(AppTheme.textMuted)
+                        .foregroundStyle(AppTheme.textSecondary)
                         .lineLimit(2)
                 }
                 HStack(spacing: 8) {

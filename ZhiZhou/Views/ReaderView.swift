@@ -32,6 +32,7 @@ struct ReaderView: View {
     @State private var restorePercent: Double = 0
     @State private var didRestore = false
     @State private var restoreSpacer: CGFloat = 0
+    @State private var restoreAttempts = 0
     @State private var saveTask: Task<Void, Never>?
 
     var totalOrderCount: Int {
@@ -111,11 +112,14 @@ struct ReaderView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { showTOC = true } label: { Image(systemName: "list.bullet") }
+                    .accessibilityLabel("目录")
                 Button { showSettings = true } label: { Image(systemName: "textformat.size") }
+                    .accessibilityLabel("阅读设置")
             }
             ToolbarItemGroup(placement: .bottomBar) {
                 Button { go(to: chapterOrder - 1) } label: { Image(systemName: "chevron.left") }
                     .disabled(chapterOrder <= 1)
+                    .accessibilityLabel("上一章")
                 Spacer()
                 Text("\(chapterOrder)/\(totalOrderCount)")
                     .font(.caption)
@@ -126,6 +130,7 @@ struct ReaderView: View {
                 Spacer()
                 Button { go(to: chapterOrder + 1) } label: { Image(systemName: "chevron.right") }
                     .disabled(chapterOrder >= totalOrderCount)
+                    .accessibilityLabel("下一章")
             }
         }
         .toolbarBackground(settings.backgroundColor, for: .navigationBar)
@@ -145,6 +150,7 @@ struct ReaderView: View {
             didRestore = false
             restoreSpacer = 0
             restorePercent = 0
+            restoreAttempts = 0
             scrollPercent = 0
             Task { await load() }
         }
@@ -189,9 +195,8 @@ struct ReaderView: View {
                 if let prog = p.progress, prog.chapterId == r.chapter.id, prog.scrollPercent > 0 {
                     restorePercent = prog.scrollPercent
                     didRestore = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        applyRestore()
-                    }
+                    restoreAttempts = 0
+                    applyRestore()
                 }
             }
         } catch {
@@ -201,12 +206,22 @@ struct ReaderView: View {
 
     private func applyRestore() {
         guard didRestore, chapter != nil else { return }
+        // 内容尺寸/视口还没就绪：下一帧再试（有上限，避免死循环）
+        guard contentSize.height > 0, viewportHeight > 0 else {
+            if restoreAttempts < 30 {
+                restoreAttempts += 1
+                DispatchQueue.main.async { applyRestore() }
+            } else {
+                didRestore = false
+            }
+            return
+        }
         let maxOffset = max(contentSize.height - viewportHeight, 0)
-        guard maxOffset > 1 else { return }
         let target = restorePercent * maxOffset
         if target > 1 {
             restoreSpacer = target
         }
+        didRestore = false
     }
 
     // MARK: - 进度

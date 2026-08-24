@@ -53,6 +53,7 @@ struct HomeView: View {
         }
         .glassPageBackground()
         .navigationTitle("知舟")
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: Novel.self) { NovelDetailView(novel: $0) }
         .task { await reload() }
         .onChange(of: search) { _, _ in
@@ -85,6 +86,7 @@ struct HomeView: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(AppTheme.textMuted)
                 }
+                .accessibilityLabel("清除搜索")
             }
         }
         .padding(.horizontal, 14)
@@ -110,30 +112,30 @@ struct HomeView: View {
             Text(label)
                 .font(.footnote)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 7)
+                .padding(.vertical, 9)
                 .foregroundStyle(selectedCategory == value ? Color.white : AppTheme.textSecondary)
                 .background(
                     selectedCategory == value ? AppTheme.primary : Color.white.opacity(0.7),
                     in: Capsule()
                 )
                 .overlay(
-                    selectedCategory == value ? Color.clear : Color.white.opacity(0.6),
-                    in: Capsule()
+                    Capsule().strokeBorder(selectedCategory == value ? Color.clear : AppTheme.border, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
+        .contentShape(Capsule())
     }
 
     // MARK: - 数据加载
 
     func reload() async {
         page = 1
-        novels = []
+        // 不提前清空列表，避免切换搜索/分类时整屏闪成占位
         await fetchPage(1, append: false)
     }
 
     private func loadMoreIfNeeded() {
-        guard !isLoadingMore, page < totalPages else { return }
+        guard !isLoading, !isLoadingMore, page < totalPages else { return }
         Task { await fetchPage(page + 1, append: true) }
     }
 

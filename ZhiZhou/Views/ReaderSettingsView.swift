@@ -67,6 +67,7 @@ struct ReaderSettingsView: View {
                     Text("与 Web 端阅读设置互通（LWW 合并）。")
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("阅读设置")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

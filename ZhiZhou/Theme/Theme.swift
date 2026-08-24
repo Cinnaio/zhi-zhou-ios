@@ -95,9 +95,32 @@ func serifFont(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
 // MARK: - View 扩展
 
 extension View {
-    /// 页面级玻璃背景：暖纸面渐变铺满安全区
+    /// 页面级玻璃背景：暖纸面渐变 + 柔和光斑，让上面的玻璃卡片有可折射的内容
+    /// （纯平面渐变会让 .glassEffect 看着像普通平面板，光斑能透出玻璃质感）
     func glassPageBackground() -> some View {
-        self.background(AppTheme.glassBackground.ignoresSafeArea())
+        ZStack {
+            AppTheme.glassBackground.ignoresSafeArea()
+
+            Circle()
+                .fill(AppTheme.peach.opacity(0.22))
+                .frame(width: 280, height: 280)
+                .blur(radius: 80)
+                .offset(x: 150, y: -260)
+
+            Circle()
+                .fill(AppTheme.sage.opacity(0.16))
+                .frame(width: 260, height: 260)
+                .blur(radius: 90)
+                .offset(x: -160, y: 360)
+
+            Circle()
+                .fill(AppTheme.butter.opacity(0.18))
+                .frame(width: 240, height: 240)
+                .blur(radius: 90)
+                .offset(x: 180, y: 380)
+
+            self
+        }
     }
 
     /// 列表在暖纸面上常用的半透明白色行底（frosted row）
