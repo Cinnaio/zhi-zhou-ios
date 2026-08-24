@@ -121,7 +121,6 @@ struct NovelDetailView: View {
         }
         .padding(16)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))
-        .shadow(color: .black.opacity(0.06), radius: 16, y: 8)
     }
 
     // MARK: - 动作

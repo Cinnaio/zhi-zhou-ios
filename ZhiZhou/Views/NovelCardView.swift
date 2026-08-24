@@ -39,7 +39,6 @@ struct NovelCardView: View {
         }
         .padding(12)
         .glassEffect(.regular, in: .rect(cornerRadius: 18))
-        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
     private var cover: some View {
