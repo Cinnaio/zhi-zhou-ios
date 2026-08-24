@@ -1,0 +1,97 @@
+# 知舟 iOS（SwiftUI 原生客户端）
+
+知舟（[zhi-zhou](https://github.com/your-org/zhi-zhou)）的 SwiftUI 原生 iOS 客户端，对接知舟自托管实例的 REST API。**独立于 web/api 仓库**，可在 Windows 上开发，用 GitHub Actions 云端构建，再通过自签（sideload）安装到 iPhone。
+
+## 技术要点
+
+- **SwiftUI + iOS 17+**，XcodeGen 描述工程（`project.yml` → `xcodegen generate` 生成 `.xcodeproj`，无需本地 Mac 也能被 CI 构建）
+- **API 对接**：复用知舟 REST API（`/api/novels`、`/api/chapters`、`/api/auth`、`/api/progress`、`/api/bookshelf`、`/api/auth/reader-settings` 等），字段与仓库 `shared/types.ts` 一一对应
+- **鉴权**：Bearer Token 存 Keychain（`ZhiZhou/Networking/Keychain.swift`），登录用 `remember` 长会话
+- **阅读设置同步**：与 Web 端互通（LWW 合并，`/api/auth/reader-settings`），键值表与后端 `reader-settings.ts` 完全一致
+- **进度同步**：滚动百分比 → `/api/progress`，进入章节自动恢复上次位置
+- **设计系统**：`ZhiZhou/Theme/Theme.swift` 复刻 DESIGN.md 的「奶茶·奶油」暖色调
+
+## 目录结构
+
+```
+project.yml                        XcodeGen 工程描述
+ZhiZhou/
+  ZhiZhouApp.swift                 App 入口
+  Support/Info.plist               （含 ATS：开发期允许 HTTP 明文）
+  Models/Models.swift              服务端模型（对齐 shared/types.ts）
+  Networking/
+    APIClient.swift                类型化 fetch 封装（Bearer token / 超时 / 分页）
+    ServerConfig.swift             服务器地址配置（自托管必配）
+    Keychain.swift                 token 安全存储
+  Services/
+    AppState.swift                 登录会话 + 启动引导
+    ReaderSettingsStore.swift      阅读设置（本地 + LWW 同步）
+  Theme/Theme.swift                设计 token
+  Views/
+    RootView / MainTabView         启动路由 / 三个 Tab
+    ServerSetupView                服务器地址 + 连通性测试
+    LoginView                      登录 / 注册
+    HomeView / NovelCardView       发现页（搜索/分类/分页）
+    NovelDetailView                详情 + 章节目录
+    ReaderView                     阅读器（核心）
+    ChapterListView / ReaderSettingsView
+    BookshelfView / ProfileView
+.github/workflows/build-ios.yml    macOS 构建 → 未签名 .ipa
+```
+
+## 开发流程（Windows + GitHub Actions + 自签）
+
+```
+1. git init / push 到 GitHub（建议公开仓库：macOS 构建免费）
+2. push 触发 Actions（或手动 workflow_dispatch）→ 下载 ZhiZhou-unsigned-ipa artifact
+3. Windows 上安装 Sideloadly（或 AltStore）→ 输入 Apple ID 签名 → USB 安装到 iPhone
+```
+
+### 自签的三种方式
+
+| 方式 | 费用 | 有效期 | 限制 | 建议 |
+|---|---|---|---|---|
+| 免费 Apple ID（Sideloadly/AltStore） | 免费 | ⚠️ **7 天**重签重装 | 3 个 App 上限、仅自己设备 | 零成本验证闭环 |
+| 开发者账号（$99/年） | $99/年 | 证书 1 年、TestFlight 90 天 | Ad Hoc 限 100 台注册设备 | ✅ 推荐，省心 |
+| 企业签名（$299/年） | $299/年 | 1 年 | 需公司资质，监管严格 | 公司内部分发 |
+
+> **免费账号 7 天限制缓解**：用 AltStore（手机与电脑同一网络时自动后台续签，基本无感）；Sideloadly 需要手动重签。
+> 换用 $99 账号后建议直接走 TestFlight，彻底摆脱侧载。
+
+### 自签安装步骤（免费 Apple ID 为例）
+
+1. iPhone 上安装 **AltStore**（电脑装 AltServer，手机同网络自动续签）或直接用 **Sideloadly**（Windows 版）
+2. 下载 Actions 产出的 `ZhiZhou-unsigned.ipa`
+3. Sideloadly：选择 ipa → 填 Apple ID → 安装（首次需在 iPhone 设置里信任证书：设置 → 通用 → VPN 与设备管理）
+4. 每 7 天重签一次（AltStore 自动 / Sideloadly 手动）
+
+## 首次使用 App
+
+1. 打开 App → 填写知舟服务器地址（如 `https://reader.example.com` 或内网 `http://192.168.x.x`）→ 测试连接
+2. 登录（注册模式随服务端 `register-status` 自动切换，邀请制需要邀请码）
+3. 发现页浏览/搜索 → 详情页 → 阅读器
+
+## 已知限制与后续路线
+
+- [ ] 离线阅读（expo-sqlite → SwiftData/Core Data 章节缓存 + 自动下载下一章）
+- [ ] 评论 / 段评 / 评分页（API 已就绪，UI 未做）
+- [ ] 推送通知（新章节提醒，需自建推送服务，如 APNs + 你的服务器）
+- [ ] App 图标与启动图（当前未配置 Assets.xcassets）
+- [ ] CI 签名（$99 账号 + GitHub Secrets + fastlane match → 出签名 ipa / TestFlight）
+
+## App Store 上架注意事项（重要）
+
+知舟服务端支持 PO18 站点预设与 `contentMode: adult`。**App Store 严禁成人内容**，上架前必须：
+1. 客户端固定 `contentMode = "safe"`，不展示/不跳转成人内容
+2. 移除 ATS 的 `NSAllowsArbitraryLoads`（强制 HTTPS）
+3. 或在自签/TestFlight/企业分发场景内使用
+
+## 构建细节
+
+- 生成工程：`xcodegen generate`（需 XcodeGen，CI 已装）
+- 本地有 Mac 时：`open ZhiZhou.xcodeproj` 后直接 ⌘R 运行模拟器
+- 修改 Info.plist 后需在 `project.yml` 保持 `INFOPLIST_FILE` 指向不变
+
+---
+
+*接口字段如有变动，以知舟仓库 `shared/types.ts` 为准，同步更新 `Models/Models.swift`。*

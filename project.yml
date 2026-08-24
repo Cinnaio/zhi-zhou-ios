@@ -1,0 +1,38 @@
+# XcodeGen 工程描述文件：纯文本描述 Xcode 工程，CI 上用 `xcodegen generate` 生成 .xcodeproj
+# 语法参考：https://github.com/yonaskolb/XcodeGen
+name: ZhiZhou
+
+options:
+  bundleIdPrefix: com.zhizhou
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+targets:
+  ZhiZhou:
+    type: application
+    platform: iOS
+    sources:
+      - path: ZhiZhou
+        excludes:
+          - "Support/Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zhizhou.app
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        INFOPLIST_FILE: ZhiZhou/Support/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        ENABLE_PREVIEWS: YES
+
+schemes:
+  ZhiZhou:
+    build:
+      targets:
+        ZhiZhou: all
+    run:
+      config: Debug
+    archive:
+      config: Release

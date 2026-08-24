@@ -1,0 +1,69 @@
+# 在 GitHub Actions 的 macOS runner 上构建未签名 .ipa（Windows 开发 → GitHub 云构建 → 自签安装）
+#
+# 免费额度提示：
+# - 公开仓库：GitHub-hosted runner（含 macOS）构建免费
+# - 私有仓库：免费 2000 分钟/月（Linux 计费），macOS 按 10 倍消耗 ≈ 200 分钟/月
+# - 如需更多 macOS 分钟，可改用 Codemagic / Bitrise 的免费额度
+#
+# 签名升级（后续）：
+# - 买 Apple Developer Program（$99/年）后，把 .p12 证书 + .mobileprovision 放进
+#   GitHub Secrets，用 fastlane match 或 xcodebuild -exportArchive 产出签名 ipa / TestFlight
+
+name: Build iOS (unsigned IPA)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build (unsigned)
+        run: |
+          xcodebuild \
+            -project ZhiZhou.xcodeproj \
+            -scheme ZhiZhou \
+            -configuration Release \
+            -derivedDataPath DerivedData \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned .ipa
+        run: |
+          APP_PATH=$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" -print -quit)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::未找到 .app 产物"
+            exit 1
+          fi
+          rm -rf Payload
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qry ZhiZhou-unsigned.ipa Payload
+          ls -lh ZhiZhou-unsigned.ipa
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZhiZhou-unsigned-ipa
+          path: ZhiZhou-unsigned.ipa
+          if-no-files-found: error
