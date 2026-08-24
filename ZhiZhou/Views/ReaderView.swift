@@ -125,7 +125,8 @@ struct ReaderView: View {
                     .disabled(chapterOrder >= totalOrderCount)
             }
         }
-        .toolbarBackground(settings.backgroundColor, for: .navigationBar, .tabBar)
+        .toolbarBackground(settings.backgroundColor, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showTOC) {
             ChapterListView(novel: novel, currentOrder: chapterOrder) { order in
                 go(to: order)
