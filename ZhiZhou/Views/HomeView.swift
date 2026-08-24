@@ -48,7 +48,7 @@ struct HomeView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
-        .background(AppTheme.surfaceWarm)
+        .glassPageBackground()
         .navigationTitle("知舟")
         .navigationDestination(for: Novel.self) { NovelDetailView(novel: $0) }
         .task { await reload() }
@@ -82,8 +82,10 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(10)
-        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
     }
 
     private var categoryChips: some View {
@@ -103,11 +105,19 @@ struct HomeView: View {
         } label: {
             Text(label)
                 .font(.footnote)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(selectedCategory == value ? AppTheme.primary : AppTheme.surface, in: Capsule())
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
                 .foregroundStyle(selectedCategory == value ? Color.white : AppTheme.textSecondary)
+                .background(
+                    selectedCategory == value ? AppTheme.primary : Color.white.opacity(0.7),
+                    in: Capsule()
+                )
+                .overlay(
+                    selectedCategory == value ? Color.clear : Color.white.opacity(0.6),
+                    in: Capsule()
+                )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - 数据加载

@@ -5,7 +5,7 @@ name: ZhiZhou
 options:
   bundleIdPrefix: com.zhizhou
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "26.0"
   createIntermediateGroups: true
 
 targets:

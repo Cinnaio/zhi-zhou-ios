@@ -75,5 +75,6 @@ struct ReaderSettingsView: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 }

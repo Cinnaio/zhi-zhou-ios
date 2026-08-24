@@ -85,6 +85,9 @@ struct BookshelfView: View {
         }
         .navigationTitle("书架")
         .navigationDestination(for: Novel.self) { NovelDetailView(novel: $0) }
+        .scrollContentBackground(.hidden)
+        .frostedRowBackground()
+        .glassPageBackground()
         .refreshable { await load() }
         .task { await load() }
     }

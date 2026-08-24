@@ -17,7 +17,7 @@ extension Color {
     }
 }
 
-/// 知舟设计系统 token（DESIGN.md）：奶茶·奶油暖色调
+/// 知舟设计系统 token（DESIGN.md）：奶茶·奶油暖色调 + iOS 26 Liquid Glass 背景
 enum AppTheme {
     static let primary = Color(hex: "8B6045")        // Milk-Tea Brown（唯一强调色）
     static let primaryDeep = Color(hex: "74503A")
@@ -32,4 +32,39 @@ enum AppTheme {
     static let warning = Color(hex: "B07C2F")
     static let danger = Color(hex: "BE123C")
     static let seal = Color(hex: "b8453a")           // 收藏印章色
+
+    // MARK: - iOS 26 Liquid Glass
+
+    /// 主界面浅色极光背景：玻璃卡片浮在其上
+    static let glassBackground = LinearGradient(
+        colors: [Color(hex: "DCE9FF"), Color(hex: "EFE4FF"), Color(hex: "FFE4F1")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    /// 登录页深色极光背景（Liquid Glass 的深色展示底）
+    static let auroraBackground = LinearGradient(
+        colors: [Color(hex: "16235E"), Color(hex: "3B2E7A"), Color(hex: "6E3B8E"), Color(hex: "A83D73")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    /// 主按钮 / 强调渐变（奶茶暖棕）
+    static let buttonGradient = LinearGradient(
+        colors: [Color(hex: "A07150"), Color(hex: "8B6045"), Color(hex: "6E4A34")],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+}
+
+extension View {
+    /// 页面级玻璃背景：浅色极光渐变铺满安全区
+    func glassPageBackground() -> some View {
+        self.background(AppTheme.glassBackground.ignoresSafeArea())
+    }
+
+    /// 列表在玻璃背景上常用的半透明白色行底（frosted row）
+    func frostedRowBackground() -> some View {
+        self.listRowBackground(Color.white.opacity(0.5))
+    }
 }

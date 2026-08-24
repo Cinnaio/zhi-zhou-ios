@@ -1,31 +1,23 @@
 import Foundation
 import Combine
 
-/// 服务器地址配置：自托管场景每个实例地址不同，用户首次启动必须配置。
+/// 服务器地址：固定指向官方知舟实例（内置硬编码，无需用户配置）。
 final class ServerConfig: ObservableObject {
     static let shared = ServerConfig()
 
-    @Published var rawURL: String {
-        didSet { UserDefaults.standard.set(rawURL, forKey: Self.storageKey) }
-    }
+    /// 固定服务器地址（应用内置，不可更改）
+    static let serverURL = "https://novel.mscraft.uk"
 
-    private static let storageKey = "zhizhou.serverURL"
+    @Published var rawURL = ServerConfig.serverURL
 
-    private init() {
-        rawURL = UserDefaults.standard.string(forKey: Self.storageKey) ?? ""
-    }
+    private init() {}
 
-    /// 规范化后的 base URL（去掉尾部斜杠、自动补 https:// 前缀）
+    /// 规范化后的 base URL（去掉尾部斜杠）
     var baseURL: URL? {
-        let trimmed = rawURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        var value = trimmed
+        var value = ServerConfig.serverURL
         while value.hasSuffix("/") { value.removeLast() }
-        if !value.lowercased().hasPrefix("http://") && !value.lowercased().hasPrefix("https://") {
-            value = "https://" + value
-        }
         return URL(string: value)
     }
 
-    var hasServer: Bool { baseURL != nil }
+    var hasServer: Bool { true }
 }

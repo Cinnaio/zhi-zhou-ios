@@ -1,16 +1,15 @@
 import SwiftUI
 
-/// 个人中心：用户信息、阅读设置、服务器地址、退出登录。
+/// 个人中心：用户信息、阅读设置、服务器信息、退出登录。
 struct ProfileView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var serverConfig: ServerConfig
 
     @State private var showLogoutConfirm = false
     @State private var showReaderSettings = false
-    @AppStorage("zhizhou.allowInvalidCert") private var allowInvalidCert = true
+    @AppStorage("zhizhou.allowInvalidCert") private var allowInvalidCert = false
 
     var body: some View {
-        Form {
+        List {
             if let user = appState.user {
                 Section {
                     HStack(spacing: 12) {
@@ -18,6 +17,7 @@ struct ProfileView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(user.displayName)
                                 .font(.headline)
+                                .foregroundStyle(AppTheme.textPrimary)
                             Text("@\(user.username)")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -40,13 +40,13 @@ struct ProfileView: View {
             }
 
             Section("服务器") {
-                LabeledContent("当前地址", value: serverConfig.rawURL)
-                NavigationLink {
-                    ServerSetupView()
-                } label: {
-                    Label("修改服务器地址", systemImage: "server.rack")
-                }
+                LabeledContent("当前地址", value: ServerConfig.serverURL)
+            }
+
+            Section("开发") {
                 Toggle("信任无效证书（开发用）", isOn: $allowInvalidCert)
+            } footer: {
+                Text("连接 HTTPS 自签名/过期证书导致“TLS 错误”时打开；生产环境请关闭。")
             }
 
             Section {
@@ -55,6 +55,9 @@ struct ProfileView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .frostedRowBackground()
+        .glassPageBackground()
         .navigationTitle("我的")
         .sheet(isPresented: $showReaderSettings) {
             ReaderSettingsView()

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 小说卡片（发现页列表项）：封面 + 标题/作者/简介/分类。
+/// 小说卡片（发现页列表项）：封面 + 标题/作者/简介/分类，Liquid Glass 玻璃卡片。
 struct NovelCardView: View {
     let novel: Novel
 
@@ -10,10 +10,11 @@ struct NovelCardView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(novel.title)
                     .font(.headline)
+                    .foregroundStyle(AppTheme.textPrimary)
                     .lineLimit(1)
                 Text(novel.author)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.textSecondary)
                 if !novel.description.isEmpty {
                     Text(novel.description)
                         .font(.footnote)
@@ -37,11 +38,8 @@ struct NovelCardView: View {
             }
         }
         .padding(12)
-        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(AppTheme.border, lineWidth: 1)
-        )
+        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
     private var cover: some View {
@@ -59,5 +57,6 @@ struct NovelCardView: View {
         }
         .frame(width: 76, height: 108)
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
     }
 }

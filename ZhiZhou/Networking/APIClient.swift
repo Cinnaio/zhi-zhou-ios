@@ -57,11 +57,11 @@ final class APIClient: NSObject, URLSessionTaskDelegate {
         return true
     }
 
-    // MARK: - TLS（自托管开发场景）
+    // MARK: - TLS
 
-    /// 是否信任无效证书（自签名/过期/域名不匹配）。默认开启便于连接自托管服务器；生产环境请关闭。
+    /// 是否信任无效证书（自签名/过期/域名不匹配）。默认关闭：固定连接公网 HTTPS 实例。
     var allowsInvalidCertificates: Bool {
-        get { UserDefaults.standard.object(forKey: Self.allowInvalidCertKey) as? Bool ?? true }
+        get { UserDefaults.standard.object(forKey: Self.allowInvalidCertKey) as? Bool ?? false }
         set { UserDefaults.standard.set(newValue, forKey: Self.allowInvalidCertKey) }
     }
 
@@ -217,7 +217,7 @@ final class APIClient: NSObject, URLSessionTaskDelegate {
              .serverCertificateHasUnknownRoot,
              .serverCertificateNotYetValid,
              .secureConnectionFailed:
-            return "TLS/证书错误（code \(error.code.rawValue)）：服务器证书不受信任。可在「服务器设置」中开启“信任无效证书（开发用）”后重试。"
+            return "TLS/证书错误（code \(error.code.rawValue)）：服务器证书不受信任。可在「我的 → 开发」中开启“信任无效证书（开发用）”后重试。"
         default:
             return "网络错误（code \(error.code.rawValue)）：\(error.localizedDescription)"
         }

@@ -2,38 +2,50 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var serverConfig: ServerConfig
 
     var body: some View {
         Group {
             if appState.isBooting {
-                VStack(spacing: 12) {
-                    ProgressView()
-                    Text("正在连接…")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            } else if !serverConfig.hasServer {
-                ServerSetupView()
+                BootView()
             } else if appState.user == nil {
                 LoginView()
             } else {
                 MainTabView()
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: appState.isBooting)
+        .animation(.easeInOut(duration: 0.25), value: appState.isBooting)
+    }
+}
+
+/// 启动连接页：深色极光 + 加载指示
+struct BootView: View {
+    var body: some View {
+        ZStack {
+            AppTheme.auroraBackground.ignoresSafeArea()
+            VStack(spacing: 16) {
+                ProgressView()
+                    .controlSize(.large)
+                    .tint(.white)
+                Text("正在连接…")
+                    .font(.footnote)
+                    .foregroundStyle(.white.opacity(0.85))
+            }
+        }
     }
 }
 
 struct MainTabView: View {
     var body: some View {
         TabView {
-            NavigationStack { HomeView() }
-                .tabItem { Label("发现", systemImage: "books.vertical") }
-            NavigationStack { BookshelfView() }
-                .tabItem { Label("书架", systemImage: "bookmark") }
-            NavigationStack { ProfileView() }
-                .tabItem { Label("我的", systemImage: "person") }
+            Tab("发现", systemImage: "books.vertical") {
+                NavigationStack { HomeView() }
+            }
+            Tab("书架", systemImage: "bookmark") {
+                NavigationStack { BookshelfView() }
+            }
+            Tab("我的", systemImage: "person") {
+                NavigationStack { ProfileView() }
+            }
         }
         .tint(AppTheme.primary)
     }

@@ -13,7 +13,11 @@ struct NovelDetailView: View {
 
     var body: some View {
         List {
-            Section { headerRow }
+            Section {
+                headerCard
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
 
             Section {
                 if isLoading {
@@ -45,7 +49,10 @@ struct NovelDetailView: View {
             } header: {
                 Text("章节（\(chapters.count)）")
             }
+            .frostedRowBackground()
         }
+        .scrollContentBackground(.hidden)
+        .glassPageBackground()
         .navigationTitle(novel.title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: ChapterMeta.self) { chapter in
@@ -54,9 +61,9 @@ struct NovelDetailView: View {
         .task { await load() }
     }
 
-    // MARK: - 头部
+    // MARK: - 头部玻璃卡片
 
-    private var headerRow: some View {
+    private var headerCard: some View {
         HStack(alignment: .top, spacing: 14) {
             AsyncImage(url: APIClient.shared.coverURL(novelId: novel.id, updatedAt: novel.updatedAt)) { phase in
                 switch phase {
@@ -72,14 +79,16 @@ struct NovelDetailView: View {
             }
             .frame(width: 88, height: 126)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(novel.title)
                     .font(.title3)
                     .bold()
+                    .foregroundStyle(AppTheme.textPrimary)
                 Text(novel.author)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppTheme.textSecondary)
                 HStack(spacing: 6) {
                     ForEach(novel.categories, id: \.self) { category in
                         Text(category)
@@ -106,7 +115,9 @@ struct NovelDetailView: View {
                 .padding(.top, 4)
             }
         }
-        .padding(.vertical, 6)
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        .shadow(color: .black.opacity(0.08), radius: 12, y: 5)
     }
 
     // MARK: - 动作

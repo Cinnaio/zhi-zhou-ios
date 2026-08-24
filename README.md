@@ -4,12 +4,13 @@
 
 ## 技术要点
 
-- **SwiftUI + iOS 17+**，XcodeGen 描述工程（`project.yml` → `xcodegen generate` 生成 `.xcodeproj`，无需本地 Mac 也能被 CI 构建）
+- **SwiftUI + iOS 26+（Liquid Glass 液态玻璃）**，XcodeGen 描述工程（`project.yml` → `xcodegen generate` 生成 `.xcodeproj`，无需本地 Mac 也能被 CI 构建）
+- **固定服务器地址**：应用内置硬编码 `https://novel.mscraft.uk`，无需用户配置
 - **API 对接**：复用知舟 REST API（`/api/novels`、`/api/chapters`、`/api/auth`、`/api/progress`、`/api/bookshelf`、`/api/auth/reader-settings` 等），字段与仓库 `shared/types.ts` 一一对应
 - **鉴权**：Bearer Token 存 Keychain（`ZhiZhou/Networking/Keychain.swift`），登录用 `remember` 长会话
 - **阅读设置同步**：与 Web 端互通（LWW 合并，`/api/auth/reader-settings`），键值表与后端 `reader-settings.ts` 完全一致
 - **进度同步**：滚动百分比 → `/api/progress`，进入章节自动恢复上次位置
-- **设计系统**：`ZhiZhou/Theme/Theme.swift` 复刻 DESIGN.md 的「奶茶·奶油」暖色调
+- **设计系统**：`ZhiZhou/Theme/Theme.swift` —— 奶茶·奶油暖色调 + iOS 26 Liquid Glass 背景（`.glassEffect`）
 
 ## 目录结构
 
@@ -27,18 +28,19 @@ ZhiZhou/
   Services/
     AppState.swift                 登录会话 + 启动引导
     ReaderSettingsStore.swift      阅读设置（本地 + LWW 同步）
-  Theme/Theme.swift                设计 token
+  Theme/Theme.swift                设计 token + Liquid Glass 背景
   Views/
-    RootView / MainTabView         启动路由 / 三个 Tab
-    ServerSetupView                服务器地址 + 连通性测试
-    LoginView                      登录 / 注册
-    HomeView / NovelCardView       发现页（搜索/分类/分页）
+    RootView / MainTabView         启动路由 / 三个 Tab（iOS 26 玻璃 Tab 栏）
+    LoginView                      登录 / 注册（液态玻璃卡片）
+    HomeView / NovelCardView       发现页（搜索/分类/分页，玻璃卡片）
     NovelDetailView                详情 + 章节目录
     ReaderView                     阅读器（核心）
     ChapterListView / ReaderSettingsView
     BookshelfView / ProfileView
 .github/workflows/build-ios.yml    macOS 构建 → 未签名 .ipa
 ```
+
+> 服务器地址已固定为 `https://novel.mscraft.uk`（`ZhiZhou/Networking/ServerConfig.swift`），不再提供填写/修改入口。
 
 ## 开发流程（Windows + GitHub Actions + 自签）
 
@@ -68,17 +70,17 @@ ZhiZhou/
 
 ## 首次使用 App
 
-1. 打开 App → 填写知舟服务器地址（如 `https://reader.example.com` 或内网 `http://192.168.x.x`）→ 测试连接
-2. 登录（注册模式随服务端 `register-status` 自动切换，邀请制需要邀请码）
-3. 发现页浏览/搜索 → 详情页 → 阅读器
+1. 打开 App（服务器地址已内置为 `https://novel.mscraft.uk`）→ 登录 / 注册（注册模式随服务端 `register-status` 自动切换，邀请制需要邀请码）
+2. 发现页浏览/搜索 → 详情页 → 阅读器
 
 ## 自托管 HTTPS 证书（TLS 错误排查）
+
+> 本 App 固定连接公网 `https://novel.mscraft.uk`，正常情况无需处理证书。若你替换为自签名证书的服务器，按以下排查：
 
 知舟服务器若使用**自签名证书**（mkcert/openssl 自签）或证书过期/域名不匹配，iOS 会直接拒绝，登录时报
 `网络错误：TLS错误导致安全连接失败`。解决：
 
-- **开发期**：在「服务器设置」（或「我的 → 服务器」）打开 **“信任无效证书（开发用）”** 开关（默认已开启），
-  App 会跳过证书校验。注意这会使连接可被中间人攻击，仅限自用/开发。
+- **开发期**：在「我的 → 开发」打开 **“信任无效证书（开发用）”** 开关，App 会跳过证书校验。注意这会使连接可被中间人攻击，仅限自用/开发。
 - **生产**：请关闭该开关，为域名配置受信任的正式证书（Let's Encrypt / 云厂商证书），并移除
   Info.plist 中的 `NSAllowsArbitraryLoads`。
 

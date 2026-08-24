@@ -51,5 +51,6 @@ struct ChapterListView: View {
                 }
             }
         }
+        .presentationBackground(.ultraThinMaterial)
     }
 }
