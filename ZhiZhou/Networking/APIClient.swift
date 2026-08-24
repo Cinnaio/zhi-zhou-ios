@@ -24,7 +24,7 @@ struct EmptyResponse: Decodable {}
 /// 类型化 fetch 封装 —— 语义对齐 web/src/lib/api.ts。
 /// - 鉴权：Authorization: Bearer <token>（token 存 Keychain）
 /// - 超时：请求 30s
-final class APIClient: NSObject, URLSessionDelegate {
+final class APIClient: NSObject, URLSessionTaskDelegate {
     static let shared = APIClient()
 
     private let decoder = JSONDecoder()
@@ -65,8 +65,12 @@ final class APIClient: NSObject, URLSessionDelegate {
         set { UserDefaults.standard.set(newValue, forKey: Self.allowInvalidCertKey) }
     }
 
+    /// ⚠️ TLS 服务器证书（serverTrust）challenge 只走 **task 级** delegate：
+    /// `urlSession(_:task:didReceive:completionHandler:)`。
+    /// session 级方法只处理代理认证等，接不到证书 challenge，必须实现 task 级版本。
     func urlSession(
         _ session: URLSession,
+        task: URLSessionTask,
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
