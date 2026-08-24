@@ -55,13 +55,13 @@ final class ReaderSettingsStore: ObservableObject {
 
     var bodyFont: Font {
         useSerif
-            ? Font.custom("STSongti-SC-Regular", size: bodyFontSize)
+            ? Font.system(size: bodyFontSize, design: .serif)
             : .system(size: bodyFontSize)
     }
 
     var titleFont: Font {
         useSerif
-            ? Font.custom("STSongti-SC-Bold", size: bodyFontSize + 4)
+            ? Font.system(size: bodyFontSize + 4, weight: .bold, design: .serif)
             : .system(size: bodyFontSize + 4, weight: .bold)
     }
 

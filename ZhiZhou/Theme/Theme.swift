@@ -80,16 +80,10 @@ enum AppTheme {
 
 // MARK: - 字体
 
-/// 衬线（宋体）字体：标题用，营造印刷书卷 / 手账感。
-/// 必须用 PostScript 名（STSongti-SC-*）而非字族名「Songti SC」，
-/// 否则 `Font.custom` 会静默回退成系统无衬线，看起来就是"没生效"。
+/// 衬线字体：标题用，营造印刷书卷 / 手账感。
+/// 用系统 `.serif` 设计（CJK 走宋体），不依赖 `Font.custom` 的字名——那样取不到字会静默回退成无衬线。
 func serifFont(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-    switch weight {
-    case .bold, .semibold, .heavy, .black:
-        return Font.custom("STSongti-SC-Bold", size: size)
-    default:
-        return Font.custom("STSongti-SC-Regular", size: size)
-    }
+    Font.system(size: size, weight: weight, design: .serif)
 }
 
 // MARK: - View 扩展
